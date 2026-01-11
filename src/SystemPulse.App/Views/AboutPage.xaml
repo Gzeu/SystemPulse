@@ -5,12 +5,137 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Background="{ThemeResource SolidBackgroundFillColorBase}">
 
-    <Grid Padding="20">
-        <StackPanel Spacing="16">
-            <TextBlock Text="About SystemPulse" Style="{ThemeResource TitleTextBlockStyle}"/>
-            <TextBlock Text="Version: 0.1.0" FontSize="14"/>
-            <TextBlock Text="Advanced System Monitor for Windows 10/11/12" FontSize="12" Foreground="{ThemeResource TextFillColorSecondary}"/>
-            <HyperlinkButton Content="GitHub Repository" NavigateUri="https://github.com/Gzeu/SystemPulse" Margin="0,16,0,0"/>
-        </StackPanel>
-    </Grid>
+    <ScrollViewer>
+        <Grid Padding="24" RowSpacing="24" MaxWidth="700">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- App Info Card -->
+            <Border Grid.Row="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="32">
+                <StackPanel Spacing="20" HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE950;" FontSize="80" Foreground="#00D4FF"/>
+                    
+                    <StackPanel Spacing="8" HorizontalAlignment="Center">
+                        <TextBlock Text="SystemPulse" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Version 1.0.0" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Advanced System Monitoring &amp; Management" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Description Card -->
+            <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="About SystemPulse" FontSize="18" FontWeight="SemiBold"/>
+                    
+                    <TextBlock TextWrapping="Wrap" FontSize="14" LineHeight="22" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                        SystemPulse is a modern, high-performance system monitoring application built with WinUI 3. It provides real-time insights into your system's performance, process management, and service control.
+                    </TextBlock>
+
+                    <TextBlock Text="Key Features" FontSize="16" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                    <StackPanel Spacing="8">
+                        <TextBlock FontSize="14">
+                            <Run Text="•"/>
+                            <Run Text="  Real-time CPU, RAM, GPU, Network, and Disk monitoring"/>
+                        </TextBlock>
+                        <TextBlock FontSize="14">
+                            <Run Text="•"/>
+                            <Run Text="  Process management with kill, suspend, and priority control"/>
+                        </TextBlock>
+                        <TextBlock FontSize="14">
+                            <Run Text="•"/>
+                            <Run Text="  Historical performance charts with OxyPlot"/>
+                        </TextBlock>
+                        <TextBlock FontSize="14">
+                            <Run Text="•"/>
+                            <Run Text="  Windows service management"/>
+                        </TextBlock>
+                        <TextBlock FontSize="14">
+                            <Run Text="•"/>
+                            <Run Text="  Startup application control"/>
+                        </TextBlock>
+                        <TextBlock FontSize="14">
+                            <Run Text="•"/>
+                            <Run Text="  CSV data export"/>
+                        </TextBlock>
+                        <TextBlock FontSize="14">
+                            <Run Text="•"/>
+                            <Run Text="  Customizable themes and settings"/>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Technology Card -->
+            <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Built With" FontSize="18" FontWeight="SemiBold"/>
+                    
+                    <Grid ColumnSpacing="40" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="8">
+                            <TextBlock Text="Framework" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="WinUI 3" FontSize="14" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Spacing="8">
+                            <TextBlock Text="Platform" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text=".NET 8.0" FontSize="14" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Libraries" FontSize="16" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="CommunityToolkit.Mvvm" FontSize="14"/>
+                        <TextBlock Text="CommunityToolkit.WinUI.UI.Controls" FontSize="14"/>
+                        <TextBlock Text="OxyPlot.Wpf" FontSize="14"/>
+                        <TextBlock Text="Serilog" FontSize="14"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Links Card -->
+            <Border Grid.Row="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Links" FontSize="18" FontWeight="SemiBold"/>
+                    
+                    <HyperlinkButton Content="GitHub Repository" NavigateUri="https://github.com/Gzeu/SystemPulse" FontSize="14">
+                        <HyperlinkButton.Icon>
+                            <FontIcon Glyph="&#xE774;"/>
+                        </HyperlinkButton.Icon>
+                    </HyperlinkButton>
+
+                    <HyperlinkButton Content="Report an Issue" NavigateUri="https://github.com/Gzeu/SystemPulse/issues" FontSize="14">
+                        <HyperlinkButton.Icon>
+                            <FontIcon Glyph="&#xE783;"/>
+                        </HyperlinkButton.Icon>
+                    </HyperlinkButton>
+
+                    <HyperlinkButton Content="Documentation" NavigateUri="https://github.com/Gzeu/SystemPulse/wiki" FontSize="14">
+                        <HyperlinkButton.Icon>
+                            <FontIcon Glyph="&#xE736;"/>
+                        </HyperlinkButton.Icon>
+                    </HyperlinkButton>
+                </StackPanel>
+            </Border>
+
+            <!-- Copyright Card -->
+            <Border Grid.Row="4" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="© 2026 SystemPulse. All rights reserved." FontSize="14" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Licensed under the MIT License" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
 </Page>

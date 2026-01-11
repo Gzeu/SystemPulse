@@ -4,5 +4,8 @@ namespace SystemPulse.App.Views;
 
 public sealed partial class AboutPage : Page
 {
-    public AboutPage() => InitializeComponent();
+    public AboutPage()
+    {
+        InitializeComponent();
+    }
 }
