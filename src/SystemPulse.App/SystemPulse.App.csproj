@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>SystemPulse.App</RootNamespace>
+    <AssemblyName>SystemPulse</AssemblyName>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0</AssemblyVersion>
+    <FileVersion>0.1.0</FileVersion>
+    <Authors>George Pricop</Authors>
+    <Description>Advanced System Monitor for Windows 10/11/12 - Modern WinUI 3 Task Manager alternative</Description>
+    <Copyright>Copyright (c) 2026 George Pricop</Copyright>
+    <ProjectUrl>https://github.com/Gzeu/SystemPulse</ProjectUrl>
+    <RepositoryUrl>https://github.com/Gzeu/SystemPulse.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <LicenseExpression>MIT</LicenseExpression>
+    <UseWindowsUILibrary>true</UseWindowsUILibrary>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <UseDesktopUI>true</UseDesktopUI>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+
+  <!-- NuGet Package Dependencies -->
+  <ItemGroup>
+    <!-- Windows App SDK & WinUI 3 -->
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.0" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1" />
+    
+    <!-- MVVM Toolkit -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    
+    <!-- Charts & Visualization -->
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WinUI" Version="2.1.0" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.DataGrid" Version="8.1.1" />
+    
+    <!-- Windows Community Toolkit -->
+    <PackageReference Include="CommunityToolkit.WinUI" Version="8.1.1" />
+    <PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.1.1" />
+    
+    <!-- Logging -->
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
+    
+    <!-- Utilities -->
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
+    <PackageReference Include="System.Management" Version="3.0.0" />
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
+  </ItemGroup>
+
+  <!-- Win32 Platform Invocation -->
+  <ItemGroup>
+    <Win32Resource Include="app.manifest" />
+  </ItemGroup>
+
+  <!-- Resources -->
+  <ItemGroup>
+    <None Update="app.manifest" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
