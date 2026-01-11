@@ -3,9 +3,209 @@
     x:Class="SystemPulse.App.Views.DetailsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:SystemPulse.App.Converters"
     Background="{ThemeResource SolidBackgroundFillColorBase}">
 
-    <Grid Padding="20">
-        <TextBlock Text="Detailed Process Information" Style="{ThemeResource TitleTextBlockStyle}"/>
+    <Page.Resources>
+        <converters:BytesToReadableConverter x:Key="BytesConverter"/>
+    </Page.Resources>
+
+    <Grid Padding="24" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Spacing="8">
+            <TextBlock Text="Process Details" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="SemiBold"/>
+            <TextBlock Text="Detailed information about selected process" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid RowSpacing="16" MaxWidth="1000">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Process Info Card -->
+                <Border Grid.Row="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
+                    <Grid RowSpacing="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="16">
+                            <FontIcon Glyph="&#xE756;" FontSize="48" Foreground="{ThemeResource AccentFillColorDefaultBrush}"/>
+                            <StackPanel Spacing="4" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind ViewModel.SelectedProcess.Name, Mode=OneWay}" FontSize="24" FontWeight="SemiBold"/>
+                                <TextBlock FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                    <Run Text="PID: "/>
+                                    <Run Text="{x:Bind ViewModel.SelectedProcess.PID, Mode=OneWay}" FontWeight="SemiBold"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Grid Grid.Row="1" ColumnSpacing="40" RowSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="CPU Usage" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock FontSize="20" FontWeight="SemiBold">
+                                    <Run Text="{x:Bind ViewModel.SelectedProcess.CPUUsage, Mode=OneWay}"/>
+                                    <Run Text="%"/>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Spacing="4">
+                                <TextBlock Text="Memory Usage" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Bind ViewModel.SelectedProcess.MemoryUsage, Mode=OneWay, Converter={StaticResource BytesConverter}}" FontSize="20" FontWeight="SemiBold"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Spacing="4">
+                                <TextBlock Text="Threads" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Bind ViewModel.SelectedProcess.ThreadCount, Mode=OneWay}" FontSize="20" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- General Information Card -->
+                <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="General Information" FontSize="18" FontWeight="SemiBold"/>
+                        
+                        <Grid ColumnSpacing="20" RowSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Process Name:" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.SelectedProcess.Name, Mode=OneWay}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Process ID (PID):" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.SelectedProcess.PID, Mode=OneWay}" FontWeight="SemiBold"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Status:" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.SelectedProcess.Status, Mode=OneWay}" FontWeight="SemiBold"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Priority:" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind ViewModel.SelectedProcess.Priority, Mode=OneWay}" FontWeight="SemiBold"/>
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="User:" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind ViewModel.SelectedProcess.Username, Mode=OneWay}" FontWeight="SemiBold"/>
+
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Path:" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind ViewModel.SelectedProcess.Path, Mode=OneWay}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Performance Card -->
+                <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Performance Metrics" FontSize="18" FontWeight="SemiBold"/>
+                        
+                        <Grid ColumnSpacing="20" RowSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="CPU Usage:" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" FontWeight="SemiBold">
+                                <Run Text="{x:Bind ViewModel.SelectedProcess.CPUUsage, Mode=OneWay}"/>
+                                <Run Text="%"/>
+                            </TextBlock>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Memory (Private):" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.SelectedProcess.MemoryUsage, Mode=OneWay, Converter={StaticResource BytesConverter}}" FontWeight="SemiBold"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Thread Count:" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.SelectedProcess.ThreadCount, Mode=OneWay}" FontWeight="SemiBold"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Handle Count:" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="N/A" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Environment Variables Card -->
+                <Border Grid.Row="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
+                    <StackPanel Spacing="16">
+                        <Grid>
+                            <TextBlock Text="Environment Variables" FontSize="18" FontWeight="SemiBold"/>
+                            <TextBlock Text="(Limited by permissions)" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                        
+                        <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Padding="12" MaxHeight="200">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.EnvironmentVariables, Mode=OneWay}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock FontSize="12" FontFamily="Consolas" Margin="0,2">
+                                                <Run Text="{Binding Key}" FontWeight="SemiBold"/>
+                                                <Run Text=" = "/>
+                                                <Run Text="{Binding Value}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Modules Card -->
+                <Border Grid.Row="4" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
+                    <StackPanel Spacing="16">
+                        <Grid>
+                            <TextBlock Text="Loaded Modules" FontSize="18" FontWeight="SemiBold"/>
+                            <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Run Text="Count: "/>
+                                <Run Text="{x:Bind ViewModel.ModuleCount, Mode=OneWay}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                        </Grid>
+                        
+                        <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Padding="12" MaxHeight="200">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.Modules, Mode=OneWay}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" FontSize="12" FontFamily="Consolas" Margin="0,2" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Page>
