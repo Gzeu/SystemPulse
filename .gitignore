@@ -1,0 +1,64 @@
+# Visual Studio cache/options
+.vs/
+.vscode/
+*.user
+*.suo
+*.rsuser
+
+# Build results
+bin/
+obj/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+.nuget/packages/
+*.nuget.props
+*.nuget.targets
+
+# Visual Studio cache
+.vs/
+
+# Test Results
+TestResults/
+*.trx
+*.coverage
+
+# Local environment
+.env
+.env.local
+localSettings.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Application logs
+logs/
+*.log
+
+# Distribution
+publish/
+dist/
+
+# Package Lock
+package-lock.json
+yarn.lock
