@@ -25,6 +25,8 @@ public sealed partial class App : Application
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "SystemPulse", "logs");
 
+        Directory.CreateDirectory(appDataDir);
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Debug()
@@ -34,7 +36,7 @@ public sealed partial class App : Application
                 retainedFileCountLimit: 30)
             .CreateLogger();
 
-        Log.Information("SystemPulse Application starting... Version: 0.2.0 (Phase 3)");
+        Log.Information("SystemPulse Application starting... Version: 0.2.0 (Phase 3 - ProcessesPage)");
     }
 
     private void SetupDependencyInjection()
@@ -56,6 +58,7 @@ public sealed partial class App : Application
         services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<ServiceManagementViewModel>();
         services.AddSingleton<StartupAppsViewModel>();
+        services.AddSingleton<UsersViewModel>();
 
         // Register Helpers
         services.AddSingleton<ThemeHelper>();
@@ -74,7 +77,8 @@ public sealed partial class App : Application
         m_window.Activate();
         
         // Set theme helper reference
-        ThemeHelper.SetWindowReference(m_window);
+        var themeHelper = _serviceProvider.GetService<ThemeHelper>();
+        themeHelper?.SetWindowReference(m_window);
         
         Log.Information("Application window activated");
     }
