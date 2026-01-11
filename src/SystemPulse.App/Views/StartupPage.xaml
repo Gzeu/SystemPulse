@@ -3,9 +3,114 @@
     x:Class="SystemPulse.App.Views.StartupPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     Background="{ThemeResource SolidBackgroundFillColorBase}">
 
-    <Grid Padding="20">
-        <TextBlock Text="Startup Applications Management" Style="{ThemeResource TitleTextBlockStyle}"/>
+    <Grid Padding="24" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Spacing="8">
+                <TextBlock Text="Startup Applications" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="SemiBold"/>
+                <TextBlock Text="Manage applications that run on system startup" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+
+            <Button Grid.Column="1" Content="Refresh" Command="{x:Bind ViewModel.RefreshCommand}" VerticalAlignment="Center">
+                <Button.Icon>
+                    <FontIcon Glyph="&#xE72C;"/>
+                </Button.Icon>
+            </Button>
+        </Grid>
+
+        <!-- Search -->
+        <TextBox Grid.Row="1" PlaceholderText="Search startup apps..." Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            <TextBox.Icon>
+                <FontIcon Glyph="&#xE721;"/>
+            </TextBox.Icon>
+        </TextBox>
+
+        <!-- Startup Apps DataGrid -->
+        <Border Grid.Row="2" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+            <toolkit:DataGrid
+                ItemsSource="{x:Bind ViewModel.FilteredStartupApps, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedApp, Mode=TwoWay}"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                GridLinesVisibility="Horizontal"
+                AlternatingRowBackground="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                CanUserSortColumns="True"
+                CanUserReorderColumns="True">
+
+                <toolkit:DataGrid.Columns>
+                    <toolkit:DataGridTextColumn Header="Application" Binding="{Binding Name}" Width="*" MinWidth="200"/>
+                    <toolkit:DataGridTextColumn Header="Publisher" Binding="{Binding Publisher}" Width="180"/>
+                    <toolkit:DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                    <toolkit:DataGridTextColumn Header="Impact" Binding="{Binding Impact}" Width="100"/>
+                    <toolkit:DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="150"/>
+                    <toolkit:DataGridTextColumn Header="Path" Binding="{Binding Path}" Width="2*" MinWidth="250"/>
+                </toolkit:DataGrid.Columns>
+
+                <toolkit:DataGrid.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Enable" Command="{x:Bind ViewModel.EnableAppCommand}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE73E;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Disable" Command="{x:Bind ViewModel.DisableAppCommand}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE711;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator/>
+                        <MenuFlyoutItem Text="Open File Location" Command="{x:Bind ViewModel.OpenLocationCommand}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE838;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </toolkit:DataGrid.ContextFlyout>
+            </toolkit:DataGrid>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16,8">
+            <Grid ColumnSpacing="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" FontSize="13">
+                    <Run Text="Total: "/>
+                    <Run Text="{x:Bind ViewModel.TotalApps, Mode=OneWay}" FontWeight="SemiBold"/>
+                </TextBlock>
+
+                <TextBlock Grid.Column="1" FontSize="13">
+                    <Run Text="Enabled: "/>
+                    <Run Text="{x:Bind ViewModel.EnabledApps, Mode=OneWay}" FontWeight="SemiBold" Foreground="#10B981"/>
+                </TextBlock>
+
+                <TextBlock Grid.Column="2" Text="{x:Bind ViewModel.SelectedApp.Name, Mode=OneWay}" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Enable" Command="{x:Bind ViewModel.EnableAppCommand}" Style="{ThemeResource AccentButtonStyle}" Height="32" MinWidth="80"/>
+                    <Button Content="Disable" Command="{x:Bind ViewModel.DisableAppCommand}" Height="32" MinWidth="80"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Page>

@@ -5,7 +5,137 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Background="{ThemeResource SolidBackgroundFillColorBase}">
 
-    <Grid Padding="20">
-        <TextBlock Text="Active Users" Style="{ThemeResource TitleTextBlockStyle}"/>
+    <Grid Padding="24" RowSpacing="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Spacing="8">
+                <TextBlock Text="User Sessions" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="SemiBold"/>
+                <TextBlock Text="View and manage active user sessions" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+
+            <Button Grid.Column="1" Content="Refresh" Command="{x:Bind ViewModel.RefreshCommand}" VerticalAlignment="Center">
+                <Button.Icon>
+                    <FontIcon Glyph="&#xE72C;"/>
+                </Button.Icon>
+            </Button>
+        </Grid>
+
+        <!-- Current User Card -->
+        <Border Grid.Row="1" Background="{ThemeResource AccentFillColorDefaultBrush}" BorderBrush="{ThemeResource AccentControlElevationBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <FontIcon Grid.Column="0" Glyph="&#xE77B;" FontSize="32" Foreground="White"/>
+                
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Text="Current User" FontSize="14" Foreground="White" Opacity="0.8"/>
+                    <TextBlock Text="{x:Bind ViewModel.CurrentUserName, Mode=OneWay}" FontSize="20" FontWeight="SemiBold" Foreground="White"/>
+                    <TextBlock FontSize="13" Foreground="White" Opacity="0.8">
+                        <Run Text="Session ID: "/>
+                        <Run Text="{x:Bind ViewModel.CurrentSessionId, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="  |  Logged in: "/>
+                        <Run Text="{x:Bind ViewModel.CurrentLoginTime, Mode=OneWay}" FontWeight="SemiBold"/>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Sessions List -->
+        <Grid Grid.Row="2" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="All Sessions" FontSize="16" FontWeight="SemiBold"/>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{x:Bind ViewModel.UserSessions, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,12">
+                                <Grid ColumnSpacing="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <FontIcon Grid.Column="0" Glyph="&#xE77B;" FontSize="32" Foreground="{ThemeResource AccentFillColorDefaultBrush}"/>
+                                    
+                                    <StackPanel Grid.Column="1" Spacing="8">
+                                        <TextBlock Text="{Binding Username}" FontSize="18" FontWeight="SemiBold"/>
+                                        
+                                        <Grid ColumnSpacing="20" RowSpacing="4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                <Run Text="Session ID: "/>
+                                                <Run Text="{Binding SessionId}" FontWeight="SemiBold"/>
+                                            </TextBlock>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="1" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                <Run Text="Status: "/>
+                                                <Run Text="{Binding Status}" FontWeight="SemiBold"/>
+                                            </TextBlock>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="2" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                <Run Text="Type: "/>
+                                                <Run Text="{Binding SessionType}" FontWeight="SemiBold"/>
+                                            </TextBlock>
+
+                                            <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                <Run Text="Login: "/>
+                                                <Run Text="{Binding LoginTime}" FontWeight="SemiBold"/>
+                                            </TextBlock>
+
+                                            <TextBlock Grid.Row="1" Grid.Column="1" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                <Run Text="Idle: "/>
+                                                <Run Text="{Binding IdleTime}" FontWeight="SemiBold"/>
+                                            </TextBlock>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Spacing="8" VerticalAlignment="Center">
+                                        <Button Content="Disconnect" Width="120">
+                                            <Button.Icon>
+                                                <FontIcon Glyph="&#xF3B1;"/>
+                                            </Button.Icon>
+                                        </Button>
+                                        <Button Content="Logoff" Width="120">
+                                            <Button.Icon>
+                                                <FontIcon Glyph="&#xE7E8;"/>
+                                            </Button.Icon>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>
