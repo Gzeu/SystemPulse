@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="SystemPulse.App.Views.PerformancePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{ThemeResource SolidBackgroundFillColorBase}">
+
+    <Grid Padding="20">
+        <StackPanel Spacing="16">
+            <TextBlock Text="Performance" Style="{ThemeResource TitleTextBlockStyle}"/>
+            <TextBlock Text="Detailed performance history and statistics" FontSize="14" Foreground="{ThemeResource TextFillColorSecondary}"/>
+            <!-- Performance charts will be added here -->
+        </StackPanel>
+    </Grid>
+</Page>

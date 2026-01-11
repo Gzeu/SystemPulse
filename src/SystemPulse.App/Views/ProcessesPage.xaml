@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="SystemPulse.App.Views.ProcessesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{ThemeResource SolidBackgroundFillColorBase}">
+
+    <Grid Padding="20" RowDefinitions="Auto,*">
+        <StackPanel Spacing="12">
+            <TextBlock Text="Processes" Style="{ThemeResource TitleTextBlockStyle}"/>
+            <TextBox PlaceholderText="Search processes..." Width="300" HorizontalAlignment="Left"/>
+        </StackPanel>
+        <!-- DataGrid for processes will be added here -->
+    </Grid>
+</Page>

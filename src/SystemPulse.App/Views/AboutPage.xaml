@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="SystemPulse.App.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{ThemeResource SolidBackgroundFillColorBase}">
+
+    <Grid Padding="20">
+        <StackPanel Spacing="16">
+            <TextBlock Text="About SystemPulse" Style="{ThemeResource TitleTextBlockStyle}"/>
+            <TextBlock Text="Version: 0.1.0" FontSize="14"/>
+            <TextBlock Text="Advanced System Monitor for Windows 10/11/12" FontSize="12" Foreground="{ThemeResource TextFillColorSecondary}"/>
+            <HyperlinkButton Content="GitHub Repository" NavigateUri="https://github.com/Gzeu/SystemPulse" Margin="0,16,0,0"/>
+        </StackPanel>
+    </Grid>
+</Page>
