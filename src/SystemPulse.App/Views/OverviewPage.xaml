@@ -3,13 +3,352 @@
     x:Class="SystemPulse.App.Views.OverviewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:SystemPulse.App.Converters"
     Background="{ThemeResource SolidBackgroundFillColorBase}">
 
-    <Grid Padding="20">
-        <StackPanel Spacing="16">
-            <TextBlock Text="Overview" Style="{ThemeResource TitleTextBlockStyle}"/>
-            <TextBlock Text="Real-time system performance monitoring dashboard" FontSize="14" Foreground="{ThemeResource TextFillColorSecondary}"/>
-            <!-- Charts will be added here -->
-        </StackPanel>
-    </Grid>
+    <Page.Resources>
+        <converters:BytesToReadableConverter x:Key="BytesConverter"/>
+        <converters:PercentageConverter x:Key="PercentageConverter"/>
+    </Page.Resources>
+
+    <ScrollViewer>
+        <Grid Padding="24" RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header Section -->
+            <StackPanel Grid.Row="0" Spacing="8">
+                <TextBlock 
+                    Text="System Overview" 
+                    Style="{ThemeResource TitleTextBlockStyle}" 
+                    FontWeight="SemiBold"/>
+                <TextBlock 
+                    Text="Real-time system performance monitoring dashboard" 
+                    FontSize="14" 
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+
+            <!-- Main Performance Gauges -->
+            <Grid Grid.Row="1" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- CPU Gauge -->
+                <Border 
+                    Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20">
+                    <StackPanel Spacing="16" HorizontalAlignment="Center">
+                        <TextBlock 
+                            Text="CPU" 
+                            FontSize="16" 
+                            FontWeight="SemiBold" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"/>
+                        
+                        <!-- CPU Progress Ring -->
+                        <Grid Width="140" Height="140">
+                            <ProgressRing 
+                                Width="140" 
+                                Height="140"
+                                IsIndeterminate="False"
+                                Value="{x:Bind ViewModel.SystemMetrics.CPUUsage, Mode=OneWay}"
+                                Maximum="100"
+                                Foreground="#00D4FF"
+                                Background="#F0F0F0"/>
+                            
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock 
+                                    Text="{x:Bind ViewModel.SystemMetrics.CPUUsage, Mode=OneWay, Converter={StaticResource PercentageConverter}}" 
+                                    FontSize="32" 
+                                    FontWeight="Bold" 
+                                    Foreground="#00D4FF"
+                                    HorizontalAlignment="Center"/>
+                                <TextBlock 
+                                    Text="Usage" 
+                                    FontSize="12" 
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock 
+                            Text="{x:Bind ViewModel.SystemMetrics.ProcessCount, Mode=OneWay}" 
+                            FontSize="14"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center">
+                            <Run Text="Processes: "/>
+                            <Run Text="{x:Bind ViewModel.SystemMetrics.ProcessCount, Mode=OneWay}" FontWeight="SemiBold"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- RAM Gauge -->
+                <Border 
+                    Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20">
+                    <StackPanel Spacing="16" HorizontalAlignment="Center">
+                        <TextBlock 
+                            Text="RAM" 
+                            FontSize="16" 
+                            FontWeight="SemiBold" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"/>
+                        
+                        <!-- RAM Progress Ring -->
+                        <Grid Width="140" Height="140">
+                            <ProgressRing 
+                                Width="140" 
+                                Height="140"
+                                IsIndeterminate="False"
+                                Value="{x:Bind ViewModel.SystemMetrics.RAMUsagePercent, Mode=OneWay}"
+                                Maximum="100"
+                                Foreground="#10B981"
+                                Background="#F0F0F0"/>
+                            
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock 
+                                    Text="{x:Bind ViewModel.SystemMetrics.RAMUsagePercent, Mode=OneWay, Converter={StaticResource PercentageConverter}}" 
+                                    FontSize="32" 
+                                    FontWeight="Bold" 
+                                    Foreground="#10B981"
+                                    HorizontalAlignment="Center"/>
+                                <TextBlock 
+                                    Text="Usage" 
+                                    FontSize="12" 
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock 
+                            FontSize="14"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center">
+                            <Run Text="{x:Bind ViewModel.SystemMetrics.RAMUsageBytes, Mode=OneWay, Converter={StaticResource BytesConverter}}"/>
+                            <Run Text=" / "/>
+                            <Run Text="{x:Bind ViewModel.SystemMetrics.TotalRAMBytes, Mode=OneWay, Converter={StaticResource BytesConverter}}" FontWeight="SemiBold"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- GPU Gauge -->
+                <Border 
+                    Grid.Column="2"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20">
+                    <StackPanel Spacing="16" HorizontalAlignment="Center">
+                        <TextBlock 
+                            Text="GPU" 
+                            FontSize="16" 
+                            FontWeight="SemiBold" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"/>
+                        
+                        <!-- GPU Progress Ring -->
+                        <Grid Width="140" Height="140">
+                            <ProgressRing 
+                                Width="140" 
+                                Height="140"
+                                IsIndeterminate="False"
+                                Value="{x:Bind ViewModel.SystemMetrics.GPUUsage, Mode=OneWay}"
+                                Maximum="100"
+                                Foreground="#7C3AED"
+                                Background="#F0F0F0"/>
+                            
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock 
+                                    Text="{x:Bind ViewModel.SystemMetrics.GPUUsage, Mode=OneWay, Converter={StaticResource PercentageConverter}}" 
+                                    FontSize="32" 
+                                    FontWeight="Bold" 
+                                    Foreground="#7C3AED"
+                                    HorizontalAlignment="Center"/>
+                                <TextBlock 
+                                    Text="Usage" 
+                                    FontSize="12" 
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock 
+                            Text="Graphics" 
+                            FontSize="14"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Secondary Metrics (Network & Disk) -->
+            <Grid Grid.Row="2" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Network Card -->
+                <Border 
+                    Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon 
+                                Glyph="&#xE774;" 
+                                FontSize="20" 
+                                Foreground="#F59E0B"/>
+                            <TextBlock 
+                                Text="Network" 
+                                FontSize="16" 
+                                FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                <Run Text="Activity: "/>
+                                <Run Text="{x:Bind ViewModel.SystemMetrics.NetworkUsageMbps, Mode=OneWay}" FontWeight="SemiBold" Foreground="#F59E0B"/>
+                                <Run Text=" Mbps"/>
+                            </TextBlock>
+                            
+                            <ProgressBar 
+                                Value="{x:Bind ViewModel.SystemMetrics.NetworkUsageMbps, Mode=OneWay}" 
+                                Maximum="100"
+                                Foreground="#F59E0B"
+                                Height="8"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Disk Card -->
+                <Border 
+                    Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon 
+                                Glyph="&#xEDA2;" 
+                                FontSize="20" 
+                                Foreground="#EF4444"/>
+                            <TextBlock 
+                                Text="Disk" 
+                                FontSize="16" 
+                                FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                <Run Text="Activity: "/>
+                                <Run Text="{x:Bind ViewModel.SystemMetrics.DiskUsagePercent, Mode=OneWay, Converter={StaticResource PercentageConverter}}" FontWeight="SemiBold" Foreground="#EF4444"/>
+                            </TextBlock>
+                            
+                            <ProgressBar 
+                                Value="{x:Bind ViewModel.SystemMetrics.DiskUsagePercent, Mode=OneWay}" 
+                                Maximum="100"
+                                Foreground="#EF4444"
+                                Height="8"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- System Information Cards -->
+            <Grid Grid.Row="3" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Threads Card -->
+                <Border 
+                    Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock 
+                            Text="Active Threads" 
+                            FontSize="14" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock 
+                            Text="{x:Bind ViewModel.SystemMetrics.ThreadCount, Mode=OneWay}" 
+                            FontSize="28" 
+                            FontWeight="Bold" 
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Timestamp Card -->
+                <Border 
+                    Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock 
+                            Text="Last Update" 
+                            FontSize="14" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock 
+                            Text="{x:Bind ViewModel.SystemMetrics.Timestamp, Mode=OneWay}" 
+                            FontSize="14" 
+                            FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Status Card -->
+                <Border 
+                    Grid.Column="2"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock 
+                            Text="Status" 
+                            FontSize="14" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Ellipse Width="12" Height="12" Fill="#10B981"/>
+                            <TextBlock 
+                                Text="Monitoring Active" 
+                                FontSize="14" 
+                                FontWeight="SemiBold" 
+                                Foreground="#10B981"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
 </Page>
