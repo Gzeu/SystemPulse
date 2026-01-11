@@ -5,25 +5,405 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Background="{ThemeResource SolidBackgroundFillColorBase}">
 
-    <Grid Padding="20">
-        <StackPanel Spacing="20" MaxWidth="600">
-            <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}"/>
-            
-            <StackPanel Spacing="8">
-                <TextBlock Text="Theme" Style="{ThemeResource SubtitleTextBlockStyle}"/>
-                <ComboBox SelectedIndex="0">
-                    <ComboBoxItem>Light</ComboBoxItem>
-                    <ComboBoxItem>Dark</ComboBoxItem>
-                    <ComboBoxItem>System</ComboBoxItem>
-                </ComboBox>
+    <ScrollViewer>
+        <Grid Padding="24" RowSpacing="24" MaxWidth="800">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Spacing="8">
+                <TextBlock 
+                    Text="Settings" 
+                    Style="{ThemeResource TitleTextBlockStyle}" 
+                    FontWeight="SemiBold"/>
+                <TextBlock 
+                    Text="Configure application preferences and behavior" 
+                    FontSize="14" 
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
-            
-            <StackPanel Spacing="8">
-                <TextBlock Text="Refresh Interval (seconds)" Style="{ThemeResource SubtitleTextBlockStyle}"/>
-                <NumberBox Value="2" Minimum="1" Maximum="60"/>
-            </StackPanel>
-            
-            <Button Content="Save Settings" Background="{ThemeResource AccentButtonBackground}"/>
-        </StackPanel>
-    </Grid>
+
+            <!-- Appearance Section -->
+            <Border 
+                Grid.Row="1"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20">
+                <StackPanel Spacing="16">
+                    <TextBlock 
+                        Text="Appearance" 
+                        FontSize="18" 
+                        FontWeight="SemiBold"/>
+
+                    <!-- Theme Selector -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock 
+                            Grid.Column="0" 
+                            Text="Application Theme" 
+                            VerticalAlignment="Center"/>
+                        
+                        <ComboBox 
+                            Grid.Column="1" 
+                            SelectedIndex="{x:Bind ViewModel.SelectedThemeIndex, Mode=TwoWay}"
+                            HorizontalAlignment="Stretch"
+                            MinWidth="200">
+                            <ComboBoxItem Content="Light"/>
+                            <ComboBoxItem Content="Dark"/>
+                            <ComboBoxItem Content="Use System Setting"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Window Opacity -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="60"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock 
+                            Grid.Column="0" 
+                            Text="Window Opacity" 
+                            VerticalAlignment="Center"/>
+                        
+                        <Slider 
+                            Grid.Column="1" 
+                            Minimum="50" 
+                            Maximum="100" 
+                            Value="{x:Bind ViewModel.WindowOpacity, Mode=TwoWay}"
+                            StepFrequency="5"
+                            TickFrequency="10"
+                            TickPlacement="BottomRight"/>
+                        
+                        <TextBlock 
+                            Grid.Column="2" 
+                            Text="{x:Bind ViewModel.WindowOpacity, Mode=OneWay}" 
+                            VerticalAlignment="Center" 
+                            HorizontalAlignment="Center"
+                            FontWeight="SemiBold"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Performance Section -->
+            <Border 
+                Grid.Row="2"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20">
+                <StackPanel Spacing="16">
+                    <TextBlock 
+                        Text="Performance" 
+                        FontSize="18" 
+                        FontWeight="SemiBold"/>
+
+                    <!-- Refresh Interval -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock 
+                            Grid.Column="0" 
+                            Text="Refresh Interval" 
+                            VerticalAlignment="Center"/>
+                        
+                        <Slider 
+                            Grid.Column="1" 
+                            Minimum="1" 
+                            Maximum="60" 
+                            Value="{x:Bind ViewModel.RefreshInterval, Mode=TwoWay}"
+                            StepFrequency="1"
+                            TickFrequency="10"
+                            TickPlacement="BottomRight"/>
+                        
+                        <TextBlock 
+                            Grid.Column="2" 
+                            VerticalAlignment="Center" 
+                            HorizontalAlignment="Center"
+                            FontWeight="SemiBold">
+                            <Run Text="{x:Bind ViewModel.RefreshInterval, Mode=OneWay}"/>
+                            <Run Text="s"/>
+                        </TextBlock>
+                    </Grid>
+
+                    <TextBlock 
+                        Text="Lower values provide more frequent updates but use more CPU" 
+                        FontSize="12" 
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap"/>
+
+                    <!-- Chart Data Points -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock 
+                            Grid.Column="0" 
+                            Text="Chart History (points)" 
+                            VerticalAlignment="Center"/>
+                        
+                        <Slider 
+                            Grid.Column="1" 
+                            Minimum="60" 
+                            Maximum="600" 
+                            Value="{x:Bind ViewModel.MaxChartDataPoints, Mode=TwoWay}"
+                            StepFrequency="30"
+                            TickFrequency="120"
+                            TickPlacement="BottomRight"/>
+                        
+                        <TextBlock 
+                            Grid.Column="2" 
+                            Text="{x:Bind ViewModel.MaxChartDataPoints, Mode=OneWay}" 
+                            VerticalAlignment="Center" 
+                            HorizontalAlignment="Center"
+                            FontWeight="SemiBold"/>
+                    </Grid>
+
+                    <TextBlock 
+                        Text="More data points show longer history but use more memory" 
+                        FontSize="12" 
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Behavior Section -->
+            <Border 
+                Grid.Row="3"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20">
+                <StackPanel Spacing="16">
+                    <TextBlock 
+                        Text="Behavior" 
+                        FontSize="18" 
+                        FontWeight="SemiBold"/>
+
+                    <!-- Always On Top -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Always on Top" FontWeight="SemiBold"/>
+                            <TextBlock 
+                                Text="Keep window above other applications" 
+                                FontSize="12" 
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <ToggleSwitch 
+                            Grid.Column="1" 
+                            IsOn="{x:Bind ViewModel.AlwaysOnTop, Mode=TwoWay}"
+                            OffContent="" 
+                            OnContent=""/>
+                    </Grid>
+
+                    <!-- Start with Windows -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Start with Windows" FontWeight="SemiBold"/>
+                            <TextBlock 
+                                Text="Launch SystemPulse automatically on system startup" 
+                                FontSize="12" 
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <ToggleSwitch 
+                            Grid.Column="1" 
+                            IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}"
+                            OffContent="" 
+                            OnContent=""/>
+                    </Grid>
+
+                    <!-- Minimize to Tray -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Minimize to System Tray" FontWeight="SemiBold"/>
+                            <TextBlock 
+                                Text="Hide window to system tray instead of taskbar when minimized" 
+                                FontSize="12" 
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <ToggleSwitch 
+                            Grid.Column="1" 
+                            IsOn="{x:Bind ViewModel.MinimizeToTray, Mode=TwoWay}"
+                            OffContent="" 
+                            OnContent=""/>
+                    </Grid>
+
+                    <!-- Start Minimized -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Start Minimized" FontWeight="SemiBold"/>
+                            <TextBlock 
+                                Text="Launch application in minimized state" 
+                                FontSize="12" 
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <ToggleSwitch 
+                            Grid.Column="1" 
+                            IsOn="{x:Bind ViewModel.StartMinimized, Mode=TwoWay}"
+                            OffContent="" 
+                            OnContent=""/>
+                    </Grid>
+
+                    <!-- Show Notifications -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Show Notifications" FontWeight="SemiBold"/>
+                            <TextBlock 
+                                Text="Display system notifications for important events" 
+                                FontSize="12" 
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <ToggleSwitch 
+                            Grid.Column="1" 
+                            IsOn="{x:Bind ViewModel.ShowNotifications, Mode=TwoWay}"
+                            OffContent="" 
+                            OnContent=""/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Data Section -->
+            <Border 
+                Grid.Row="4"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20">
+                <StackPanel Spacing="16">
+                    <TextBlock 
+                        Text="Data Management" 
+                        FontSize="18" 
+                        FontWeight="SemiBold"/>
+
+                    <!-- Clear Logs -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Application Logs" FontWeight="SemiBold"/>
+                            <TextBlock 
+                                Text="Clear all application log files" 
+                                FontSize="12" 
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+
+                        <Button 
+                            Grid.Column="1" 
+                            Content="Clear Logs" 
+                            Command="{x:Bind ViewModel.ClearLogsCommand}"/>
+                    </Grid>
+
+                    <!-- Reset Settings -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Reset to Defaults" FontWeight="SemiBold"/>
+                            <TextBlock 
+                                Text="Restore all settings to their default values" 
+                                FontSize="12" 
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+
+                        <Button 
+                            Grid.Column="1" 
+                            Content="Reset" 
+                            Command="{x:Bind ViewModel.ResetSettingsCommand}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Action Buttons -->
+            <Grid Grid.Row="5" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock 
+                    Grid.Column="0" 
+                    Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" 
+                    VerticalAlignment="Center" 
+                    FontSize="13" 
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+                <Button 
+                    Grid.Column="1" 
+                    Content="Cancel" 
+                    Command="{x:Bind ViewModel.CancelCommand}"
+                    MinWidth="100"/>
+                
+                <Button 
+                    Grid.Column="2" 
+                    Content="Save" 
+                    Command="{x:Bind ViewModel.SaveCommand}"
+                    Style="{ThemeResource AccentButtonStyle}"
+                    MinWidth="100"/>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
 </Page>
