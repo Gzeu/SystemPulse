@@ -25,6 +25,9 @@ public partial class ShellViewModel : ObservableObject
     [ObservableProperty]
     private bool isMonitoring;
 
+    [ObservableProperty]
+    private int refreshInterval = 2;
+
     public ShellViewModel(
         ISystemMonitorService monitorService,
         ISettingsService settingsService,
@@ -34,26 +37,50 @@ public partial class ShellViewModel : ObservableObject
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+        // Initialize with empty metrics
+        SystemMetrics = new PerformanceMetrics
+        {
+            Timestamp = DateTime.Now
+        };
+
         InitializeMonitoring();
     }
 
     private void InitializeMonitoring()
     {
-        _updateTimer = new DispatcherTimer();
-        _updateTimer.Interval = TimeSpan.FromSeconds(2);
-        _updateTimer.Tick += (s, e) => UpdateMetrics();
-        _updateTimer.Start();
+        try
+        {
+            // Get refresh interval from settings
+            RefreshInterval = _settingsService.GetRefreshInterval();
 
-        IsMonitoring = true;
-        _logger.LogInfo("Shell ViewModel initialized and monitoring started");
+            _updateTimer = new DispatcherTimer();
+            _updateTimer.Interval = TimeSpan.FromSeconds(RefreshInterval);
+            _updateTimer.Tick += (s, e) => UpdateMetrics();
+            _updateTimer.Start();
+
+            IsMonitoring = true;
+            _logger.LogInfo($"Shell ViewModel initialized with {RefreshInterval}s refresh interval");
+
+            // Initial update
+            UpdateMetrics();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to initialize monitoring", ex);
+            StatusText = "Monitoring initialization failed";
+        }
     }
 
     private void UpdateMetrics()
     {
         try
         {
-            SystemMetrics = _monitorService.GetMetrics();
-            StatusText = $"Updated: {DateTime.Now:HH:mm:ss}";
+            var metrics = _monitorService.GetMetrics();
+            if (metrics != null)
+            {
+                SystemMetrics = metrics;
+                StatusText = $"Updated: {DateTime.Now:HH:mm:ss}";
+            }
         }
         catch (Exception ex)
         {
@@ -63,9 +90,36 @@ public partial class ShellViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Shutdown()
+    public void ChangeRefreshInterval(int seconds)
+    {
+        if (seconds < 1 || seconds > 60)
+            return;
+
+        RefreshInterval = seconds;
+        
+        if (_updateTimer != null)
+        {
+            _updateTimer.Stop();
+            _updateTimer.Interval = TimeSpan.FromSeconds(seconds);
+            _updateTimer.Start();
+        }
+
+        _ = _settingsService.SetRefreshIntervalAsync(seconds);
+        _logger.LogInfo($"Refresh interval changed to {seconds}s");
+    }
+
+    [RelayCommand]
+    public void Shutdown()
     {
         _updateTimer?.Stop();
+        IsMonitoring = false;
         _logger.LogInfo("Application shutting down");
+    }
+
+    [RelayCommand]
+    public void RefreshNow()
+    {
+        UpdateMetrics();
+        _logger.LogInfo("Manual refresh triggered");
     }
 }
