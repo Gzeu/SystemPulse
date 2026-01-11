@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SystemPulse.App.ViewModels;
 using SystemPulse.App.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SystemPulse.App;
 
@@ -16,11 +17,19 @@ public sealed partial class MainWindow : Window
 
         var app = (App)Application.Current;
         _viewModel = app.Services.GetService(typeof(ShellViewModel)) as ShellViewModel;
+        
+        if (_viewModel == null)
+        {
+            throw new InvalidOperationException("ShellViewModel could not be resolved from DI container");
+        }
+
         DataContext = _viewModel;
 
         SetupTitleBar();
-        MainNavView.SelectionChanged += MainNavView_SelectionChanged;
+        SetupNavigation();
         StartStatusBarUpdates();
+        
+        // Navigate to default page
         NavigateToPage("overview");
     }
 
@@ -28,6 +37,11 @@ public sealed partial class MainWindow : Window
     {
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
+    }
+
+    private void SetupNavigation()
+    {
+        MainNavView.SelectionChanged += MainNavView_SelectionChanged;
     }
 
     private void MainNavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -54,6 +68,7 @@ public sealed partial class MainWindow : Window
             _ => typeof(OverviewPage)
         };
 
+        // Pass ShellViewModel as navigation parameter
         ContentFrame.Navigate(pageType, _viewModel);
     }
 
@@ -72,6 +87,11 @@ public sealed partial class MainWindow : Window
             CPUText.Text = $"CPU: {_viewModel.SystemMetrics.CPUUsage:F1}%";
             RAMText.Text = $"RAM: {_viewModel.SystemMetrics.RAMUsagePercent:F1}%";
             GPUText.Text = $"GPU: {_viewModel.SystemMetrics.GPUUsage:F1}%";
+            StatusText.Text = _viewModel.StatusText;
+        }
+        else
+        {
+            StatusText.Text = "Initializing...";
         }
     }
 }
