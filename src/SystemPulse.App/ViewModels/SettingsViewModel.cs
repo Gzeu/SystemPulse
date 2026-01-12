@@ -1,7 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SystemPulse.App.Services;
 using SystemPulse.App.Helpers;
+using SystemPulse.App.Models;
+using SystemPulse.App.Services;
 using Microsoft.UI.Xaml;
 using System.Text.Json;
 
@@ -10,63 +11,277 @@ namespace SystemPulse.App.ViewModels;
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly ILoggingService _logger;
-    private readonly ThemeHelper _themeHelper;
-    private readonly DialogHelper _dialogHelper;
     private readonly string _settingsFilePath;
+    private AppSettings _originalSettings;
+    private Window? _mainWindow;
 
-    // Appearance
-    [ObservableProperty]
-    private int selectedThemeIndex = 2; // Default: Use System Setting
-
-    [ObservableProperty]
-    private int windowOpacity = 100;
-
-    // Performance
-    [ObservableProperty]
-    private int refreshInterval = 2; // Default: 2 seconds
+    #region Appearance Settings
 
     [ObservableProperty]
-    private int maxChartDataPoints = 300; // Default: 300 points
-
-    // Behavior
-    [ObservableProperty]
-    private bool alwaysOnTop = false;
+    private int selectedThemeIndex;
 
     [ObservableProperty]
-    private bool startWithWindows = false;
+    private double windowOpacity = 1.0;
+
+    #endregion
+
+    #region Performance Settings
 
     [ObservableProperty]
-    private bool minimizeToTray = false;
+    private int refreshInterval = 2;
 
     [ObservableProperty]
-    private bool startMinimized = false;
+    private int chartHistory = 300;
+
+    #endregion
+
+    #region Behavior Settings
+
+    [ObservableProperty]
+    private bool alwaysOnTop;
+
+    [ObservableProperty]
+    private bool startWithWindows;
+
+    [ObservableProperty]
+    private bool minimizeToTray;
+
+    [ObservableProperty]
+    private bool startMinimized;
 
     [ObservableProperty]
     private bool showNotifications = true;
 
-    // UI State
+    #endregion
+
+    #region Status
+
     [ObservableProperty]
-    private string statusText = "Ready";
+    private string statusText = string.Empty;
 
-    private AppSettings _originalSettings;
+    [ObservableProperty]
+    private bool hasUnsavedChanges;
 
-    public SettingsViewModel(
-        ILoggingService logger,
-        ThemeHelper themeHelper,
-        DialogHelper dialogHelper)
+    #endregion
+
+    public SettingsViewModel(ILoggingService logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _themeHelper = themeHelper ?? throw new ArgumentNullException(nameof(themeHelper));
-        _dialogHelper = dialogHelper ?? throw new ArgumentNullException(nameof(dialogHelper));
 
-        // Settings file path
+        // Get settings file path
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         var appFolder = Path.Combine(appDataPath, "SystemPulse");
         Directory.CreateDirectory(appFolder);
         _settingsFilePath = Path.Combine(appFolder, "settings.json");
+
+        // Load settings
+        LoadSettings();
+
+        // Track original settings for cancel
+        _originalSettings = GetCurrentSettings();
+
+        // Watch for property changes
+        PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName != nameof(StatusText) && e.PropertyName != nameof(HasUnsavedChanges))
+            {
+                HasUnsavedChanges = true;
+            }
+        };
     }
 
-    public void LoadSettings()
+    public void SetMainWindow(Window window)
+    {
+        _mainWindow = window;
+        ApplyWindowSettings();
+    }
+
+    partial void OnWindowOpacityChanged(double value)
+    {
+        ApplyOpacity();
+    }
+
+    partial void OnAlwaysOnTopChanged(bool value)
+    {
+        ApplyAlwaysOnTop();
+    }
+
+    partial void OnSelectedThemeIndexChanged(int value)
+    {
+        ApplyTheme();
+    }
+
+    private void ApplyWindowSettings()
+    {
+        if (_mainWindow == null)
+            return;
+
+        ApplyOpacity();
+        ApplyAlwaysOnTop();
+    }
+
+    private void ApplyOpacity()
+    {
+        if (_mainWindow == null)
+            return;
+
+        try
+        {
+            bool success = Win32Helper.SetWindowOpacity(_mainWindow, WindowOpacity);
+            if (!success)
+            {
+                _logger.LogWarning($"Failed to set window opacity to {WindowOpacity}");
+            }
+            else
+            {
+                _logger.LogInfo($"Window opacity set to {WindowOpacity * 100}%");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to apply window opacity", ex);
+        }
+    }
+
+    private void ApplyAlwaysOnTop()
+    {
+        if (_mainWindow == null)
+            return;
+
+        try
+        {
+            bool success = Win32Helper.SetAlwaysOnTop(_mainWindow, AlwaysOnTop);
+            if (!success)
+            {
+                _logger.LogWarning($"Failed to set always-on-top to {AlwaysOnTop}");
+            }
+            else
+            {
+                _logger.LogInfo($"Always-on-top set to {AlwaysOnTop}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to apply always-on-top", ex);
+        }
+    }
+
+    private void ApplyTheme()
+    {
+        try
+        {
+            var theme = SelectedThemeIndex switch
+            {
+                0 => ElementTheme.Light,
+                1 => ElementTheme.Dark,
+                2 => ElementTheme.Default,
+                _ => ElementTheme.Default
+            };
+
+            ThemeHelper.SetAppTheme(theme);
+            _logger.LogInfo($"Theme changed to {theme}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to apply theme", ex);
+        }
+    }
+
+    [RelayCommand]
+    private async Task SaveAsync()
+    {
+        try
+        {
+            var settings = GetCurrentSettings();
+            var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+            await File.WriteAllTextAsync(_settingsFilePath, json);
+
+            _originalSettings = settings;
+            HasUnsavedChanges = false;
+            StatusText = "Settings saved successfully";
+            _logger.LogInfo("Settings saved");
+
+            // Clear status after 3 seconds
+            await Task.Delay(3000);
+            StatusText = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            StatusText = "Failed to save settings";
+            _logger.LogError("Failed to save settings", ex);
+        }
+    }
+
+    [RelayCommand]
+    private void Cancel()
+    {
+        try
+        {
+            ApplySettings(_originalSettings);
+            HasUnsavedChanges = false;
+            StatusText = "Changes cancelled";
+            _logger.LogInfo("Settings cancelled");
+        }
+        catch (Exception ex)
+        {
+            StatusText = "Failed to cancel changes";
+            _logger.LogError("Failed to cancel settings", ex);
+        }
+    }
+
+    [RelayCommand]
+    private async Task ClearLogsAsync()
+    {
+        try
+        {
+            var logsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SystemPulse", "Logs");
+            if (Directory.Exists(logsPath))
+            {
+                var files = Directory.GetFiles(logsPath, "*.log");
+                foreach (var file in files)
+                {
+                    File.Delete(file);
+                }
+                StatusText = $"Cleared {files.Length} log files";
+                _logger.LogInfo($"Cleared {files.Length} log files");
+            }
+            else
+            {
+                StatusText = "No logs to clear";
+            }
+
+            await Task.Delay(3000);
+            StatusText = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            StatusText = "Failed to clear logs";
+            _logger.LogError("Failed to clear logs", ex);
+        }
+    }
+
+    [RelayCommand]
+    private async Task ResetToDefaultsAsync()
+    {
+        try
+        {
+            var defaults = new AppSettings();
+            ApplySettings(defaults);
+            await SaveAsync();
+            StatusText = "Reset to defaults";
+            _logger.LogInfo("Settings reset to defaults");
+
+            await Task.Delay(3000);
+            StatusText = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            StatusText = "Failed to reset settings";
+            _logger.LogError("Failed to reset settings", ex);
+        }
+    }
+
+    private void LoadSettings()
     {
         try
         {
@@ -78,36 +293,18 @@ public partial class SettingsViewModel : ObservableObject
                 if (settings != null)
                 {
                     ApplySettings(settings);
-                    _originalSettings = settings;
-                    _logger.LogInfo("Settings loaded successfully");
+                    _logger.LogInfo("Settings loaded from file");
                     return;
                 }
             }
 
-            // Load defaults if file doesn't exist
-            _originalSettings = GetDefaultSettings();
-            ApplySettings(_originalSettings);
-            _logger.LogInfo("Loaded default settings");
+            // Use defaults if file doesn't exist
+            _logger.LogInfo("Using default settings");
         }
         catch (Exception ex)
         {
-            _logger.LogError("Failed to load settings", ex);
-            _originalSettings = GetDefaultSettings();
-            ApplySettings(_originalSettings);
+            _logger.LogError("Failed to load settings, using defaults", ex);
         }
-    }
-
-    private void ApplySettings(AppSettings settings)
-    {
-        SelectedThemeIndex = settings.ThemeIndex;
-        WindowOpacity = settings.WindowOpacity;
-        RefreshInterval = settings.RefreshInterval;
-        MaxChartDataPoints = settings.MaxChartDataPoints;
-        AlwaysOnTop = settings.AlwaysOnTop;
-        StartWithWindows = settings.StartWithWindows;
-        MinimizeToTray = settings.MinimizeToTray;
-        StartMinimized = settings.StartMinimized;
-        ShowNotifications = settings.ShowNotifications;
     }
 
     private AppSettings GetCurrentSettings()
@@ -117,7 +314,7 @@ public partial class SettingsViewModel : ObservableObject
             ThemeIndex = SelectedThemeIndex,
             WindowOpacity = WindowOpacity,
             RefreshInterval = RefreshInterval,
-            MaxChartDataPoints = MaxChartDataPoints,
+            ChartHistory = ChartHistory,
             AlwaysOnTop = AlwaysOnTop,
             StartWithWindows = StartWithWindows,
             MinimizeToTray = MinimizeToTray,
@@ -126,199 +323,18 @@ public partial class SettingsViewModel : ObservableObject
         };
     }
 
-    private AppSettings GetDefaultSettings()
+    private void ApplySettings(AppSettings settings)
     {
-        return new AppSettings
-        {
-            ThemeIndex = 2, // Use System Setting
-            WindowOpacity = 100,
-            RefreshInterval = 2,
-            MaxChartDataPoints = 300,
-            AlwaysOnTop = false,
-            StartWithWindows = false,
-            MinimizeToTray = false,
-            StartMinimized = false,
-            ShowNotifications = true
-        };
+        SelectedThemeIndex = settings.ThemeIndex;
+        WindowOpacity = settings.WindowOpacity;
+        RefreshInterval = settings.RefreshInterval;
+        ChartHistory = settings.ChartHistory;
+        AlwaysOnTop = settings.AlwaysOnTop;
+        StartWithWindows = settings.StartWithWindows;
+        MinimizeToTray = settings.MinimizeToTray;
+        StartMinimized = settings.StartMinimized;
+        ShowNotifications = settings.ShowNotifications;
     }
 
-    partial void OnSelectedThemeIndexChanged(int value)
-    {
-        // Apply theme immediately
-        var theme = value switch
-        {
-            0 => ElementTheme.Light,
-            1 => ElementTheme.Dark,
-            2 => ElementTheme.Default,
-            _ => ElementTheme.Default
-        };
-
-        _themeHelper.SetTheme(theme);
-        StatusText = "Theme updated";
-    }
-
-    partial void OnWindowOpacityChanged(int value)
-    {
-        // Apply opacity to main window
-        if (Application.Current?.Windows?.FirstOrDefault() is Window mainWindow)
-        {
-            // Note: WinUI 3 doesn't directly support window opacity
-            // This would need platform-specific implementation
-            StatusText = $"Opacity set to {value}%";
-        }
-    }
-
-    partial void OnAlwaysOnTopChanged(bool value)
-    {
-        // Apply always-on-top to main window
-        if (Application.Current?.Windows?.FirstOrDefault() is Window mainWindow)
-        {
-            // Note: WinUI 3 requires platform-specific implementation
-            StatusText = value ? "Window set to always on top" : "Always on top disabled";
-        }
-    }
-
-    partial void OnStartWithWindowsChanged(bool value)
-    {
-        try
-        {
-            var startupPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.Startup),
-                "SystemPulse.lnk");
-
-            if (value)
-            {
-                // Create startup shortcut
-                // Note: Requires IWshRuntimeLibrary or alternative implementation
-                StatusText = "Auto-start enabled";
-            }
-            else
-            {
-                // Remove startup shortcut
-                if (File.Exists(startupPath))
-                {
-                    File.Delete(startupPath);
-                }
-                StatusText = "Auto-start disabled";
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to update startup setting", ex);
-            StatusText = "Failed to update auto-start";
-        }
-    }
-
-    [RelayCommand]
-    public async Task SaveAsync()
-    {
-        try
-        {
-            var settings = GetCurrentSettings();
-            var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
-            await File.WriteAllTextAsync(_settingsFilePath, json);
-
-            _originalSettings = settings;
-            StatusText = "Settings saved successfully";
-            _logger.LogInfo("Settings saved");
-
-            await Task.Delay(2000);
-            StatusText = "Ready";
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to save settings", ex);
-            StatusText = "Failed to save settings";
-            await _dialogHelper.ShowErrorAsync("Save Failed", "Could not save settings. Check permissions and try again.");
-        }
-    }
-
-    [RelayCommand]
-    public void Cancel()
-    {
-        // Revert to original settings
-        if (_originalSettings != null)
-        {
-            ApplySettings(_originalSettings);
-            StatusText = "Changes cancelled";
-            _logger.LogInfo("Settings changes cancelled");
-        }
-    }
-
-    [RelayCommand]
-    public async Task ResetSettingsAsync()
-    {
-        var confirmed = await _dialogHelper.ShowConfirmationAsync(
-            "Reset Settings",
-            "Are you sure you want to reset all settings to their default values? This cannot be undone.");
-
-        if (confirmed)
-        {
-            var defaults = GetDefaultSettings();
-            ApplySettings(defaults);
-            _originalSettings = defaults;
-
-            // Save defaults
-            await SaveAsync();
-
-            StatusText = "Settings reset to defaults";
-            _logger.LogInfo("Settings reset to defaults");
-        }
-    }
-
-    [RelayCommand]
-    public async Task ClearLogsAsync()
-    {
-        var confirmed = await _dialogHelper.ShowConfirmationAsync(
-            "Clear Logs",
-            "Are you sure you want to delete all application log files? This cannot be undone.");
-
-        if (confirmed)
-        {
-            try
-            {
-                var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                var logsPath = Path.Combine(appDataPath, "SystemPulse", "Logs");
-
-                if (Directory.Exists(logsPath))
-                {
-                    var files = Directory.GetFiles(logsPath, "*.log");
-                    foreach (var file in files)
-                    {
-                        File.Delete(file);
-                    }
-
-                    StatusText = $"Cleared {files.Length} log files";
-                    _logger.LogInfo($"Cleared {files.Length} log files");
-                }
-                else
-                {
-                    StatusText = "No log files found";
-                }
-
-                await Task.Delay(2000);
-                StatusText = "Ready";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Failed to clear logs", ex);
-                StatusText = "Failed to clear logs";
-                await _dialogHelper.ShowErrorAsync("Clear Failed", "Could not clear log files. They may be in use.");
-            }
-        }
-    }
-}
-
-// Settings data model
-public class AppSettings
-{
-    public int ThemeIndex { get; set; }
-    public int WindowOpacity { get; set; }
-    public int RefreshInterval { get; set; }
-    public int MaxChartDataPoints { get; set; }
-    public bool AlwaysOnTop { get; set; }
-    public bool StartWithWindows { get; set; }
-    public bool MinimizeToTray { get; set; }
-    public bool StartMinimized { get; set; }
-    public bool ShowNotifications { get; set; }
+    public AppSettings GetSettings() => GetCurrentSettings();
 }

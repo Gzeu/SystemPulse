@@ -1,97 +1,87 @@
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+using SystemPulse.App.Services;
 using SystemPulse.App.ViewModels;
 using SystemPulse.App.Views;
 using Microsoft.Extensions.DependencyInjection;
+using SystemPulse.App.Helpers;
 
 namespace SystemPulse.App;
 
 public sealed partial class MainWindow : Window
 {
-    private ShellViewModel _viewModel;
-    private DispatcherTimer _updateTimer;
+    private readonly ILoggingService _logger;
+    private readonly ITrayIconService _trayIconService;
 
     public MainWindow()
     {
         InitializeComponent();
 
-        var app = (App)Application.Current;
-        _viewModel = app.Services.GetService(typeof(ShellViewModel)) as ShellViewModel;
+        var app = Application.Current as App;
+        if (app == null)
+        {
+            throw new InvalidOperationException("Application instance is null");
+        }
+
+        _logger = app.Services.GetRequiredService<ILoggingService>();
+        _trayIconService = app.Services.GetRequiredService<ITrayIconService>();
+
+        Title = "SystemPulse";
         
-        if (_viewModel == null)
+        // Initialize window
+        InitializeWindow();
+
+        // Set default page
+        ContentFrame.Navigate(typeof(OverviewPage));
+        NavigationView.SelectedItem = NavigationView.MenuItems[0];
+
+        _logger.LogInfo("MainWindow initialized");
+    }
+
+    private void InitializeWindow()
+    {
+        // Initialize tray icon
+        _trayIconService.Initialize(this);
+
+        // Apply saved settings
+        var app = Application.Current as App;
+        var settingsViewModel = app?.Services.GetService<SettingsViewModel>();
+        if (settingsViewModel != null)
         {
-            throw new InvalidOperationException("ShellViewModel could not be resolved from DI container");
+            settingsViewModel.SetMainWindow(this);
+            _logger.LogInfo("Window settings applied from SettingsViewModel");
         }
 
-        DataContext = _viewModel;
-
-        SetupTitleBar();
-        SetupNavigation();
-        StartStatusBarUpdates();
-        
-        // Navigate to default page
-        NavigateToPage("overview");
+        // Test Win32 support
+        bool win32Supported = Win32Helper.TestWin32Support(this);
+        _logger.LogInfo($"Win32 API support: {win32Supported}");
     }
 
-    private void SetupTitleBar()
+    private void NavigationView_SelectionChanged(
+        Microsoft.UI.Xaml.Controls.NavigationView sender,
+        Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
     {
-        ExtendsContentIntoTitleBar = true;
-        SetTitleBar(AppTitleBar);
-    }
-
-    private void SetupNavigation()
-    {
-        MainNavView.SelectionChanged += MainNavView_SelectionChanged;
-    }
-
-    private void MainNavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-    {
-        if (args.SelectedItemContainer is NavigationViewItem item && item.Tag is string tag)
+        if (args.SelectedItem is Microsoft.UI.Xaml.Controls.NavigationViewItem item)
         {
-            NavigateToPage(tag);
-        }
-    }
+            var tag = item.Tag?.ToString();
+            Type? pageType = tag switch
+            {
+                "overview" => typeof(OverviewPage),
+                "processes" => typeof(ProcessesPage),
+                "performance" => typeof(PerformancePage),
+                "services" => typeof(ServicesPage),
+                "startup" => typeof(StartupPage),
+                "users" => typeof(UsersPage),
+                "details" => typeof(DetailsPage),
+                "settings" => typeof(SettingsPage),
+                "about" => typeof(AboutPage),
+                _ => null
+            };
 
-    private void NavigateToPage(string tag)
-    {
-        Type pageType = tag switch
-        {
-            "overview" => typeof(OverviewPage),
-            "processes" => typeof(ProcessesPage),
-            "performance" => typeof(PerformancePage),
-            "startup" => typeof(StartupPage),
-            "services" => typeof(ServicesPage),
-            "users" => typeof(UsersPage),
-            "details" => typeof(DetailsPage),
-            "settings" => typeof(SettingsPage),
-            "about" => typeof(AboutPage),
-            _ => typeof(OverviewPage)
-        };
-
-        // Pass ShellViewModel as navigation parameter
-        ContentFrame.Navigate(pageType, _viewModel);
-    }
-
-    private void StartStatusBarUpdates()
-    {
-        _updateTimer = new DispatcherTimer();
-        _updateTimer.Interval = TimeSpan.FromSeconds(1);
-        _updateTimer.Tick += (s, e) => UpdateStatusBar();
-        _updateTimer.Start();
-    }
-
-    private void UpdateStatusBar()
-    {
-        if (_viewModel?.SystemMetrics != null)
-        {
-            CPUText.Text = $"CPU: {_viewModel.SystemMetrics.CPUUsage:F1}%";
-            RAMText.Text = $"RAM: {_viewModel.SystemMetrics.RAMUsagePercent:F1}%";
-            GPUText.Text = $"GPU: {_viewModel.SystemMetrics.GPUUsage:F1}%";
-            StatusText.Text = _viewModel.StatusText;
-        }
-        else
-        {
-            StatusText.Text = "Initializing...";
+            if (pageType != null && ContentFrame.CurrentSourcePageType != pageType)
+            {
+                ContentFrame.Navigate(pageType);
+                _logger.LogInfo($"Navigated to {pageType.Name}");
+            }
         }
     }
 }
