@@ -1,87 +1,53 @@
-using Microsoft.UI.Xaml;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
+using Microsoft.UI.Xaml;
+using SystemPulse.App.Helpers;
 using SystemPulse.App.Services;
 using SystemPulse.App.ViewModels;
-using SystemPulse.App.Helpers;
+using System;
 
 namespace SystemPulse.App;
 
-public sealed partial class App : Application
+public partial class App : Application
 {
-    private IServiceProvider _serviceProvider;
-    private MainWindow m_window;
+    public IServiceProvider Services { get; private set; }
+    private Window? _window;
 
     public App()
     {
         InitializeComponent();
-        SetupLogging();
-        SetupDependencyInjection();
+        Services = ConfigureServices();
     }
 
-    private void SetupLogging()
-    {
-        var appDataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "SystemPulse", "logs");
-
-        Directory.CreateDirectory(appDataDir);
-
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.Debug()
-            .WriteTo.File(
-                Path.Combine(appDataDir, "app.log"),
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 30)
-            .CreateLogger();
-
-        Log.Information("SystemPulse Application starting... Version: 0.2.0 (Phase 3 - ProcessesPage)");
-    }
-
-    private void SetupDependencyInjection()
+    private IServiceProvider ConfigureServices()
     {
         var services = new ServiceCollection();
 
-        // Register Core Services
+        // Register Services
         services.AddSingleton<ILoggingService, LoggingService>();
-        services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<ISystemMonitorService, SystemMonitorService>();
-        services.AddSingleton<IProcessService, ProcessService>();
-        services.AddSingleton<IWMIService, WMIService>();
+        services.AddSingleton<ITrayIconService, TrayIconService>();
 
         // Register ViewModels
-        services.AddSingleton<ShellViewModel>();
-        services.AddSingleton<OverviewViewModel>();
-        services.AddSingleton<ProcessesViewModel>();
-        services.AddSingleton<PerformanceViewModel>();
-        services.AddSingleton<SettingsViewModel>();
-        services.AddSingleton<ServiceManagementViewModel>();
-        services.AddSingleton<StartupAppsViewModel>();
-        services.AddSingleton<UsersViewModel>();
+        services.AddTransient<OverviewViewModel>();
+        services.AddTransient<ProcessesViewModel>();
+        services.AddTransient<PerformanceViewModel>();
+        services.AddSingleton<SettingsViewModel>(); // Singleton to maintain state
+        services.AddTransient<ServicesViewModel>();
+        services.AddTransient<StartupViewModel>();
+        services.AddTransient<UsersViewModel>();
+        services.AddTransient<DetailsViewModel>();
 
-        // Register Helpers
-        services.AddSingleton<ThemeHelper>();
-        services.AddSingleton<ChartDataHelper>();
-        services.AddSingleton<DialogHelper>();
-        services.AddSingleton<ExportHelper>();
-
-        _serviceProvider = services.BuildServiceProvider();
-
-        Log.Information("Dependency injection container configured successfully");
+        return services.BuildServiceProvider();
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        m_window = new MainWindow();
-        m_window.Activate();
-        
-        // Set theme helper reference
-        var themeHelper = _serviceProvider.GetService<ThemeHelper>();
-        themeHelper?.SetWindowReference(m_window);
-        
-        Log.Information("Application window activated");
-    }
+        _window = new MainWindow();
+        _window.Activate();
 
-    public IServiceProvider Services => _serviceProvider;
+        var logger = Services.GetRequiredService<ILoggingService>();
+        logger.LogInfo("SystemPulse application started");
+        logger.LogInfo($"Platform: {Environment.OSVersion}");
+        logger.LogInfo($".NET Version: {Environment.Version}");
+    }
 }
