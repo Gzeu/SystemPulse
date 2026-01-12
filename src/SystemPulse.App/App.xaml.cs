@@ -26,6 +26,7 @@ public partial class App : Application
         services.AddSingleton<ILoggingService, LoggingService>();
         services.AddSingleton<ISystemMonitorService, SystemMonitorService>();
         services.AddSingleton<ITrayIconService, TrayIconService>();
+        services.AddSingleton<IToastNotificationService, ToastNotificationService>();
 
         // Register ViewModels
         services.AddTransient<OverviewViewModel>();
@@ -49,5 +50,6 @@ public partial class App : Application
         logger.LogInfo("SystemPulse application started");
         logger.LogInfo($"Platform: {Environment.OSVersion}");
         logger.LogInfo($".NET Version: {Environment.Version}");
+        logger.LogInfo("All services initialized successfully");
     }
 }
